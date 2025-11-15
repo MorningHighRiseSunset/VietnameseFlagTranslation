@@ -1,23 +1,8 @@
 // Netlify function: enhanced translator with intent parsing and quoted-phrase handling
 // This file was migrated from the local server implementation so behavior is consistent
 
-const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
-const SITE_MAIN_TARGET_RAW = process.env.SITE_MAIN_TARGET || null;
-let SITE_MAIN_TARGET = null;
-if (SITE_MAIN_TARGET_RAW) {
-  SITE_MAIN_TARGET = mapLanguageNameToCode ? mapLanguageNameToCode(SITE_MAIN_TARGET_RAW) : (String(SITE_MAIN_TARGET_RAW).trim().toLowerCase());
-}
-try {
-  if (GOOGLE_API_KEY) {
-    const masked = `${GOOGLE_API_KEY.slice(0, 6)}...${GOOGLE_API_KEY.slice(-4)}`;
-    console.log('GOOGLE_API_KEY present:', true, 'masked:', masked);
-  } else {
-    console.log('GOOGLE_API_KEY present:', false);
-  }
-} catch (e) {
-  console.log('Error while logging GOOGLE_API_KEY presence', String(e));
-}
 const path = require('path');
+const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 
 let languageAliases = {};
 try {
@@ -110,6 +95,27 @@ function resolveLanguageName(name) {
   if (aliasToCode[cleaned]) return aliasToCode[cleaned];
   if (fallbackMap[cleaned]) return fallbackMap[cleaned];
   return null;
+}
+
+// Now safe to use mapLanguageNameToCode
+const SITE_MAIN_TARGET_RAW = process.env.SITE_MAIN_TARGET || null;
+let SITE_MAIN_TARGET = null;
+if (SITE_MAIN_TARGET_RAW) {
+  SITE_MAIN_TARGET = mapLanguageNameToCode(SITE_MAIN_TARGET_RAW);
+  if (!SITE_MAIN_TARGET) {
+    SITE_MAIN_TARGET = String(SITE_MAIN_TARGET_RAW).trim().toLowerCase();
+  }
+}
+
+try {
+  if (GOOGLE_API_KEY) {
+    const masked = `${GOOGLE_API_KEY.slice(0, 6)}...${GOOGLE_API_KEY.slice(-4)}`;
+    console.log('GOOGLE_API_KEY present:', true, 'masked:', masked);
+  } else {
+    console.log('GOOGLE_API_KEY present:', false);
+  }
+} catch (e) {
+  console.log('Error while logging GOOGLE_API_KEY presence', String(e));
 }
 
 async function callGoogleDetect(q) {
