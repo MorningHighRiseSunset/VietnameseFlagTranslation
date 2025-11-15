@@ -3,7 +3,7 @@
   command = ""
 
 [functions]
-  directory = "../netlify/functions"
+  directory = "netlify/functions"
 
 [context.production.environment]
   SITE_MAIN_TARGET = "vi"
