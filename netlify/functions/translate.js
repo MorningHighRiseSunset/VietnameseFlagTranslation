@@ -3,7 +3,7 @@
 
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 // Allow per-site default target via Netlify env var `SITE_MAIN_TARGET` (e.g. 'fr', 'zh', 'hi', 'en')
-const SITE_MAIN_TARGET_RAW = process.env.SITE_MAIN_TARGET || null;
+const SITE_MAIN_TARGET_RAW = process.env.SITE_MAIN_TARGET || 'vi';
 let SITE_MAIN_TARGET = null;
 if (SITE_MAIN_TARGET_RAW) {
   SITE_MAIN_TARGET = mapLanguageNameToCode ? mapLanguageNameToCode(SITE_MAIN_TARGET_RAW) : (String(SITE_MAIN_TARGET_RAW).trim().toLowerCase());
@@ -215,8 +215,8 @@ exports.handler = async function(event) {
       sourceCode = mapLanguageNameToCode(userSource);
       if (!sourceCode) console.log('Could not map source language:', userSource);
     }
-    // default target: prefer SITE_MAIN_TARGET (set per Netlify site), otherwise fall back to Spanish
-    let targetCode = SITE_MAIN_TARGET || 'es';
+    // default target: prefer SITE_MAIN_TARGET (set per Netlify site), otherwise fall back to Vietnamese
+    let targetCode = SITE_MAIN_TARGET || 'vi';
      if (userTarget) {
        const mapped = mapLanguageNameToCode(userTarget);
        if (mapped) {
@@ -347,3 +347,4 @@ exports.handler = async function(event) {
     return { statusCode: 500, body: JSON.stringify({ error: 'Server error', details: errorDetails }) };
   }
 };
+

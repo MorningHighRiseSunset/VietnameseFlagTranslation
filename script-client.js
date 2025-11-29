@@ -44,6 +44,41 @@ const manualOptions = [
 let detectTimer = null;
 const DEBOUNCE_MS = 1500; // Increased from 600ms to avoid interrupting the user mid-word
 
+let lastTranslation = null;
+let lastInput = null;
+
+// Pinyin conversion helper for iOS TTS fallback
+function mandarinToPinyinStr(text) {
+    const cjkToPinyin = {
+        '??': 'nüèdài', '??': 'zhongwén', '??': 'ni hao', '??': 'xièxiè',
+        '???': 'duìbùqi', '??': 'zàijiàn', '?': 'shì', '?': 'bù',
+        '?': 'you', '?': 'hen', '?': 'hao', '?': 'ma'
+    };
+    let result = text;
+    Object.keys(cjkToPinyin).forEach(char => {
+        result = result.split(char).join(cjkToPinyin[char]);
+    });
+    return result;
+}
+
+// Audio unlock for mobile (TTS requires user gesture on iOS)
+function unlockAudioOnGesture() {
+    if (!window.speechSynthesis) return;
+    const unlock = () => {
+        const u = new SpeechSynthesisUtterance('');
+        u.volume = 0.01;
+        try {
+            window.speechSynthesis.speak(u);
+        } catch (e) {
+            console.log('Audio unlock attempt:', e.message);
+        }
+        document.removeEventListener('click', unlock);
+        document.removeEventListener('touchstart', unlock);
+    };
+    document.addEventListener('click', unlock, { once: true });
+    document.addEventListener('touchstart', unlock, { once: true });
+}
+
 // Voice recognition (Web Speech API) helpers
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
 let recognition = null;
@@ -176,7 +211,7 @@ function speakText(text) {
     // Try to detect target language for appropriate voice
     const manualToggle = document.getElementById('manualToggle');
     const manualTarget = document.getElementById('manualTarget');
-    let targetLang = 'es'; // default to Spanish
+    let targetLang = 'en'; // default to English
     
     if (manualToggle && manualToggle.checked && manualTarget) {
         const targetValue = manualTarget.value;
@@ -192,7 +227,16 @@ function speakText(text) {
         targetLang = langMap[targetValue] || 'es';
     }
     
-    utterance.lang = targetLang;
+        
+    // iOS/Safari TTS fallback: if target is Mandarin and native voice likely unavailable,
+    // convert to pinyin and speak using en-US voice to pronounce the romanization
+    if (targetLang === 'zh') {
+        const pinyinText = mandarinToPinyinStr(text);
+        utterance.text = pinyinText;
+        utterance.lang = 'en-US';
+    } else {
+        utterance.lang = targetLang;
+    }
     utterance.rate = 0.9; // Slightly slower for clarity
     
     window.speechSynthesis.speak(utterance);
@@ -375,3 +419,4 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
 });
+
