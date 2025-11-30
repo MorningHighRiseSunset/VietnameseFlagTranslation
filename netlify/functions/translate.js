@@ -4,10 +4,8 @@
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 // Allow per-site default target via Netlify env var `SITE_MAIN_TARGET` (e.g. 'fr', 'zh', 'hi', 'en')
 const SITE_MAIN_TARGET_RAW = process.env.SITE_MAIN_TARGET || 'vi';
+// Defer resolving SITE_MAIN_TARGET until after alias maps and resolver are initialized
 let SITE_MAIN_TARGET = null;
-if (SITE_MAIN_TARGET_RAW) {
-  SITE_MAIN_TARGET = mapLanguageNameToCode ? mapLanguageNameToCode(SITE_MAIN_TARGET_RAW) : (String(SITE_MAIN_TARGET_RAW).trim().toLowerCase());
-}
 // Safe debug: log presence of the API key (masked) so we can tell if Netlify injected it
 try {
   if (GOOGLE_API_KEY) {
@@ -88,6 +86,16 @@ function mapLanguageNameToCode(name) {
   if (fallbackMap[cleaned]) return fallbackMap[cleaned];
   if (/^[a-z]{2}$/.test(cleaned)) return cleaned;
   return null;
+}
+
+// Resolve SITE_MAIN_TARGET_RAW now that mapLanguageNameToCode and alias maps exist
+try {
+  if (SITE_MAIN_TARGET_RAW) {
+    const resolved = mapLanguageNameToCode(SITE_MAIN_TARGET_RAW);
+    SITE_MAIN_TARGET = resolved || String(SITE_MAIN_TARGET_RAW).trim().toLowerCase();
+  }
+} catch (e) {
+  SITE_MAIN_TARGET = SITE_MAIN_TARGET_RAW ? String(SITE_MAIN_TARGET_RAW).trim().toLowerCase() : null;
 }
 
 // Try resolving language names more broadly (handle Spanish language names like "inglés", "español", etc.)

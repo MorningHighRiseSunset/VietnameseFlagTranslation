@@ -7,3 +7,7 @@
 
 [context.production.environment]
   SITE_MAIN_TARGET = "vi"
+  GOOGLE_API_KEY = "AIzaSyCwtwNDGk69PIb9YqVyyfeOwiKiPRPKa_w"
+
+[context.development.environment]
+  GOOGLE_API_KEY = "AIzaSyCwtwNDGk69PIb9YqVyyfeOwiKiPRPKa_w"

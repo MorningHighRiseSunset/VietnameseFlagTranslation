@@ -50,8 +50,8 @@ let lastInput = null;
 // Pinyin conversion helper for iOS TTS fallback
 function mandarinToPinyinStr(text) {
     const cjkToPinyin = {
-        '??': 'nüèdài', '??': 'zhongwén', '??': 'ni hao', '??': 'xièxiè',
-        '???': 'duìbùqi', '??': 'zàijiàn', '?': 'shì', '?': 'bù',
+        '??': 'nï¿½ï¿½dï¿½i', '??': 'zhongwï¿½n', '??': 'ni hao', '??': 'xiï¿½xiï¿½',
+        '???': 'duï¿½bï¿½qi', '??': 'zï¿½ijiï¿½n', '?': 'shï¿½', '?': 'bï¿½',
         '?': 'you', '?': 'hen', '?': 'hao', '?': 'ma'
     };
     let result = text;
@@ -378,12 +378,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Debounced input
+    // Translate button only â€” disable auto-translate while typing
+    const translateBtn = document.getElementById('translateBtn');
+    if (translateBtn) {
+        translateBtn.addEventListener('click', function() {
+            // Ensure audio is unlocked on first user gesture (mobile/iOS)
+            unlockAudioOnGesture();
+            startTranslate();
+        });
+    }
+
+    // Block Enter from submitting/auto-translating â€” require explicit Translate button click
     if (input) {
-        input.addEventListener('input', function() {
-            if (output && output.textContent.trim()) clearOutputAnimated(output);
-            if (detectTimer) clearTimeout(detectTimer);
-            detectTimer = setTimeout(() => startTranslate(), DEBOUNCE_MS);
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                return false;
+            }
         });
     }
 
@@ -417,6 +428,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         }
+
+    // Add a user-gesture audio unlock so iOS can speak later
+    unlockAudioOnGesture();
 
 });
 
